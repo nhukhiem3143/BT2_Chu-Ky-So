@@ -1,0 +1,54 @@
+=== KIỂM TRA XÁC THỰC CHỮ KÝ PDF ===
+Thời gian kiểm thử: 2025-10-28 02:14:54.419884
+File kiểm tra: E:/Web-Security/ChuKySo/tampered.pdf
+====================================
+🔍 Phát hiện chữ ký: SigField1
+====================================
+/Contents: 2575 bytes
+/ByteRange: [0, 343581, 348733, 823]
+SHA256(ByteRange): 6562fdff18b313c886354b003224a8f9c99be773e8357b6145a1ad5fd3002a7e... ✅
+====================================
+🔒 KẾT QUẢ XÁC THỰC CHỮ KÝ:
+Signer info
+-----------
+Certificate subject: "Common Name: Nguyen Nhu Khiem, Organization: K58KTP, Locality: Thai Nguyen, State/Province: Thai Nguyen, Country: VN"
+Certificate SHA1 fingerprint: 51f7074bf5a36fd18b5693fe213ca55276b51706
+Certificate SHA256 fingerprint: 25988a3303ae7d585e60fbdbdd48ef1c2cd090664e101f5dc407e0ee4347f288
+Trust anchor: "Common Name: Nguyen Nhu Khiem, Organization: K58KTP, Locality: Thai Nguyen, State/Province: Thai Nguyen, Country: VN"
+The signer's certificate is untrusted.
+
+
+Integrity
+---------
+The signature is cryptographically unsound.
+
+The digest algorithm used was 'sha256'.
+The signature mechanism used was 'sha256_rsa'.
+
+
+Signing time
+------------
+Signing time as reported by signer: 2025-10-27T19:13:03+00:00
+
+
+Modifications
+-------------
+The signature does not cover the entire file.
+Some modifications may be illegitimate, and they appear to be incompatible with the current document modification policy.
+
+
+Bottom line
+-----------
+The signature is judged INVALID.
+
+
+
+📜 Thông tin chứng thư người ký:
+  Chủ thể (Subject): Common Name: Nguyen Nhu Khiem, Organization: K58KTP, Locality: Thai Nguyen, State/Province: Thai Nguyen, Country: VN
+  SHA1: 51 F7 07 4B F5 A3 6F D1 8B 56 93 FE 21 3C A5 52 76 B5 17 06
+  SHA256: 25 98 8A 33 03 AE 7D 58 5E 60 FB DB DD 48 EF 1C 2C D0 90 66 4E 10 1F 5D C4 07 E0 EE 43 47 F2 88
+
+🕒 Thời gian ký (VN): 2025-10-28 02:13:03+07:00
+❌ File đã bị chỉnh sửa sau khi ký!
+====================================
+❌ Chữ ký KHÔNG HỢP LỆ hoặc file bị chỉnh sửa.

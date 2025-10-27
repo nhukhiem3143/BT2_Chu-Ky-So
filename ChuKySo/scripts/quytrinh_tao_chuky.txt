@@ -1,0 +1,23 @@
+3) Các bước tạo và lưu chữ ký trong PDF (đã có private RSA)
+Quy trình tạo chữ ký số PDF theo ISO 32000-1 sử dụng pyHanko để minh họa 8 bước tuần tự. Giả sử đã có private RSA (2048-bit, PKCS#8 PEM từ signer_key.pem) và cert (signer_cert.pem). Code mở rộng từ sign_pdf.py hiện tại, thêm chi tiết kỹ thuật:
+
+Hash alg: SHA-256 (md_algorithm="sha256" trong PdfSignatureMetadata).
+RSA padding: PKCS#1 v1.5 (mặc định trong pyHanko cho sha256_rsa).
+Key size: 2048-bit (từ gen_keys.py).
+Vị trí lưu trong PKCS#7: messageDigest (signedAttrs, hash vùng ByteRange), signingTime (signedAttrs, thời gian ký), cert chain (certificates array trong CMS signedData).
+
+Đầu ra file PDF
+
+original.pdf (gốc): 1 trang text bài tập (không AcroForm, không SigField, kích thước ~10KB). Nội dung: "BÀI TẬP VỀNHÀ – MÔN: AN TOÀN VÀ BẢO MẬT..." (như ảnh bạn gửi).
+signed_detailed.pdf (đã ký): Kích thước ~275KB (tăng do stamp + /Contents). Cấu trúc:
+
+Catalog → /AcroForm → /Fields → SigField1 (widget box 240-550x50-150).
+SigField1 → /Sig (SigDict): /Contents (DER hex ~3145 bytes, PKCS#7 detached với messageDigest SHA-256, signingTime "D:20251028165803+00'00'", cert chain [signer_cert]).
+/ByteRange [0, L1, offset_Contents, 8192] (reserve 8192 bytes cho /Contents).
+Incremental update: Append SigDict + cross-ref table (revision 2).
+DSS (nếu LTV): /DSS trong Catalog với /Certs (chain), /OCSPs (từ vc).
+Minh họa: Stamp "Khiem" + hình ten.jpg ở cuối trang, như ảnh signed.pdf bạn gửi (thêm ngày ký hiện tại).
+
+
+
+Chạy code sẽ tạo signed_detailed.pdf tương tự ảnh, với chữ ký số cryptographically sound (verify_pdf.py báo VALID). Nếu thêm RFC3161, dùng signer.tsp_client (TSA URL). Ví dụ minh họa: Hash ByteRange khớp digest trong messageDigest của PKCS#7.

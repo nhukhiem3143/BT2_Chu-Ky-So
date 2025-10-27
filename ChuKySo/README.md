@@ -21,10 +21,11 @@ ChuKySo/
 │   ├── tamper_pdf.py                  ← tạo file PDF bị chỉnh sửa  
 │ 
 ├── venv/                           
-│
+│  
 ├── original.pdf                       ← PDF gốc  
 ├── signed.pdf                         ← PDF đã ký  
 ├── tampered.pdf                       ← PDF bị chỉnh sửa  
 └── README.md                            
       
+
 

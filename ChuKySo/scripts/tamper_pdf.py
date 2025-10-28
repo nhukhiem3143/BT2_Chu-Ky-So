@@ -1,9 +1,3 @@
-# ==========================================
-# tamper_pdf_overlay_unicode.py
-# Thêm chữ "Xin chào" (có tiếng Việt) vào trang đầu của signed.pdf
-# mà không phá chữ ký.
-# ==========================================
-
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
@@ -16,7 +10,6 @@ OVERLAY_PDF = "overlay.pdf"
 TAMPERED_PDF = "../tampered.pdf"
 
 # === 1. Đăng ký font Unicode ===
-# (Chọn một font có hỗ trợ tiếng Việt, ví dụ Arial hoặc DejaVuSans)
 FONT_PATH = Path("C:/Windows/Fonts/arial.ttf")  # Đường dẫn font hệ thống
 pdfmetrics.registerFont(TTFont("ArialUnicode", str(FONT_PATH)))
 

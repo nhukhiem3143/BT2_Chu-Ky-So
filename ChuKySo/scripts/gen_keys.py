@@ -1,7 +1,3 @@
-# ==========================================
-# gen_keys.py - Tạo cặp khóa RSA + chứng chỉ tự ký (self-signed)
-# Dùng cho thử nghiệm ký số PDF (không dùng khóa thương mại)
-# ==========================================
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
@@ -39,7 +35,7 @@ cert = (
     .public_key(private_key.public_key())
     .serial_number(x509.random_serial_number())
     .not_valid_before(datetime.utcnow())
-    .not_valid_after(datetime.utcnow() + timedelta(days=365))  # hiệu lực 1 năm
+    .not_valid_after(datetime.utcnow() + timedelta(days=365)) # Hợp lệ 1 năm
     .add_extension(
         x509.BasicConstraints(ca=True, path_length=None), critical=True,
     )

@@ -1,6 +1,3 @@
-# ==========================================
-# verify_pdf.py - Xác thực chữ ký PDF (chuẩn pyHanko 0.31.0)
-# ==========================================
 from pyhanko.sign import validation
 from pyhanko.sign.validation.status import SignatureStatus  # Import để tham chiếu nếu cần
 from pyhanko.sign.diff_analysis import ModificationLevel

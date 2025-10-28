@@ -1,6 +1,3 @@
-# ==========================================
-# sign_pdf.py - Fix chuẩn chạy trên pyHanko 0.31.0 (Windows)
-# ==========================================
 from datetime import datetime
 from pyhanko.sign import signers, fields
 from pyhanko.stamp.text import TextStampStyle
@@ -59,15 +56,14 @@ with open(PDF_IN, "rb") as inf:
         print("⚠️ Không đọc được số trang, mặc định 1.")
         num_pages = 1
 
-    target_page = num_pages - 1  # index trang cuối
+    target_page = num_pages - 1  
 
-    # 🟢 Thêm field chữ ký ở trang cuối cùng
     fields.append_signature_field(
         writer,
         SigFieldSpec(
             sig_field_name="SigField1",
             box=(240, 50, 550, 150),
-            on_page=target_page  # ✅ chỉ khác duy nhất dòng này
+            on_page=target_page 
         )
     )
 
@@ -99,7 +95,6 @@ with open(PDF_IN, "rb") as inf:
         f"\nNgày ký: {ngay_ky}"
     )
 
-    # Style khung chữ ký
     stamp_style = TextStampStyle(
         stamp_text=stamp_text,
         background=background_img,

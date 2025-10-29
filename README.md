@@ -41,16 +41,10 @@ PDF là định dạng dựa trên object (indirect objects), với chữ ký s�
 
 Trong `signed.pdf`, SigField1 (widget) trỏ SigDict với `/ByteRange [0, 267828, 274120, 821]`, hash nội dung gốc. Tamper thêm text phá ByteRange, dẫn đến invalid.
 
-### Sơ đồ object (ASCII)
+### Sơ đồ object (ASCII)  
 
-```
-Catalog
-├── /Pages ──> Page ──> /Contents (hash)
-│   ├── /Resources ──> /XObject (hình "Khiem")
-│   └── /Annots ──> SigField ──> /Sig (/Contents, /ByteRange)
-└── /AcroForm ──> /Fields ──> SigField ──> SigDict
-    └── /DSS ──> OCSP/CRLs
-```
+<img width="7860" height="2659" alt="Cấu trúc Object PDF có Chữ ký số" src="https://github.com/user-attachments/assets/5abccde0-c143-498f-a32e-fbfee54a13a6" />  
+
 
 ---
 

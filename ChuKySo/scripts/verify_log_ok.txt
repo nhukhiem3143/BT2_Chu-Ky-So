@@ -1,12 +1,12 @@
 === KIỂM TRA XÁC THỰC CHỮ KÝ PDF ===
-Thời gian kiểm thử: 2025-10-29 01:33:46.050894
-File kiểm tra: E:/Web-Security/ChuKySo/tampered.pdf
+Thời gian kiểm thử: 2025-10-29 01:33:01.061429
+File kiểm tra: E:/Web-Security/ChuKySo/signed.pdf
 ====================================
 🔍 Phát hiện chữ ký: SigField1
 ====================================
 /Contents: 2575 bytes
 /ByteRange: [0, 437412, 442564, 823]
-SHA256(ByteRange): ce6c6e4a5085300bfd7be1d05f5d9006de76205f2b5ed24de096ab2d1da19b40... ✅
+SHA256(ByteRange): 4e69407f9bf78b44b8ade6dfa96f37d4d680535798063521cb286c3e34b79780... ✅
 ====================================
 🔒 KẾT QUẢ XÁC THỰC CHỮ KÝ:
 Signer info
@@ -15,12 +15,12 @@ Certificate subject: "Common Name: Nguyen Nhu Khiem, Organization: K58KTP, Local
 Certificate SHA1 fingerprint: 51f7074bf5a36fd18b5693fe213ca55276b51706
 Certificate SHA256 fingerprint: 25988a3303ae7d585e60fbdbdd48ef1c2cd090664e101f5dc407e0ee4347f288
 Trust anchor: "Common Name: Nguyen Nhu Khiem, Organization: K58KTP, Locality: Thai Nguyen, State/Province: Thai Nguyen, Country: VN"
-The signer's certificate is untrusted.
+The signer's certificate is trusted.
 
 
 Integrity
 ---------
-The signature is cryptographically unsound.
+The signature is cryptographically sound.
 
 The digest algorithm used was 'sha256'.
 The signature mechanism used was 'sha256_rsa'.
@@ -33,13 +33,12 @@ Signing time as reported by signer: 2025-10-28T18:31:59+00:00
 
 Modifications
 -------------
-The signature does not cover the entire file.
-Some modifications may be illegitimate, and they appear to be incompatible with the current document modification policy.
+The signature covers the entire file.
 
 
 Bottom line
 -----------
-The signature is judged INVALID.
+The signature is judged VALID.
 
 
 
@@ -49,6 +48,6 @@ The signature is judged INVALID.
   SHA256: 25 98 8A 33 03 AE 7D 58 5E 60 FB DB DD 48 EF 1C 2C D0 90 66 4E 10 1F 5D C4 07 E0 EE 43 47 F2 88
 
 🕒 Thời gian ký (VN): 2025-10-29 01:31:59+07:00
-❌ File đã bị chỉnh sửa sau khi ký!
+✅ File chưa bị chỉnh sửa kể từ khi ký.
 ====================================
-❌ Chữ ký KHÔNG HỢP LỆ hoặc file bị chỉnh sửa.
+✅ Chữ ký HỢP LỆ và tài liệu NGUYÊN VẸN.

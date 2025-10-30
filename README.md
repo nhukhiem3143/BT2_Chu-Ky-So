@@ -131,7 +131,8 @@ python tamper_pdf.py
 **Chức năng:**
 1. Mở file `signed.pdf`
 2. Thêm 1 ký tự hoặc ghi đè nội dung nhỏ (ví dụ "TEST")
-3. Lưu thành `tampered.pdf`
+3. Lưu thành `tampered.pdf`  
+<img width="1078" height="804" alt="image" src="https://github.com/user-attachments/assets/667731d3-5972-42d4-90fa-d6e90a726b77" />  
 
 Khi chạy lại `verify_pdf.py`, kết quả sẽ báo:
 ```

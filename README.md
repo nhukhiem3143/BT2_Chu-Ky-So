@@ -1,118 +1,197 @@
-# BÁO CÁO BÀI TẬP VỀ NHÀ  
-## MÔN: AN TOÀN VÀ BẢO MẬT THÔNG TIN
-
-### Chủ đề: Chữ ký số trong file PDF
-
-**Sinh viên thực hiện:** Nguyễn Như Khiêm  
-**MSSV:** K225480106030  
-**Lớp:** K58KTP
+# 🧾 BÀI TẬP: CHỮ KÝ SỐ TRONG FILE PDF  
+**Môn:** An toàn và Bảo mật Thông tin  
+**Giảng viên:** Đỗ Duy Cốp  
+**Lớp:** 58KTP  
+**Sinh viên:** Nguyễn Như Khiêm  
+**Hạn nộp:** 31/10/2025 – 23:59:59  
 
 ---
 
-## Nội dung
-
-Tệp PDF này dùng để thử nghiệm quy trình tạo chữ ký số (8 bước) theo yêu cầu của đề bài môn An toàn và Bảo mật thông tin. Báo cáo mô tả cấu trúc PDF liên quan chữ ký, cách lưu thời gian ký, và các rủi ro bảo mật, dựa trên ISO 32000-1 và PAdES. Minh họa qua file `original.pdf` (gốc), `signed.pdf` (đã ký), `tampered.pdf` (bị chỉnh sửa).
-
----
-
-## 1. Cấu trúc PDF liên quan chữ ký số
-
-PDF là định dạng dựa trên object (indirect objects), với chữ ký số nhúng qua AcroForm và Signature dictionary (SigDict). Chữ ký sử dụng PKCS#7/CMS để mã hóa dữ liệu (`/Contents`), `/ByteRange` chỉ vùng hash không thay đổi. Incremental updates cho phép ký nhiều lần, DSS (PAdES) lưu dữ liệu xác minh dài hạn.
-
-### Object refs quan trọng và vai trò
-
-| Object Ref | Vai trò |
-|------------|---------|
-| **Catalog (ref 0)** | Root, chứa `/AcroForm` và `/Pages`. Quản lý toàn bộ file, truy xuất SigField. |
-| **Pages tree (`/Pages` ref N)** | Cây trang từ Catalog đến Page. Tổ chức `/Annots` (SigField widget). |
-| **Page object (ref M)** | Mô tả trang, chứa `/Contents` và `/Resources`. Hiển thị vị trí chữ ký. |
-| **Resources (ref P)** | Dictionary font/XObject. Hỗ trợ render hình chữ ký tay (như "Khiem" trong signed.pdf). |
-| **Content streams (`/Contents` ref Q)** | Stream vẽ nội dung. Được hash trong `/ByteRange`; tamper phá chữ ký. |
-| **XObject (ref R)** | External object (hình ảnh). Lưu chữ ký tay minh họa. |
-| **AcroForm (ref S)** | Từ Catalog, quản lý `/Fields` (SigField). |
-| **Signature field (widget ref T)** | Annotation trong Page, trỏ `/Sig`. Vị trí UI chữ ký. |
-| **Signature dictionary (`/Sig` ref U)** | Chứa `/Contents` (PKCS#7), `/ByteRange`, `/M`. Lưu dữ liệu ký, validate hash. |
-| **`/ByteRange`** | `[start1, length1, start2, length2]`. Vùng hash (trừ `/Contents`). |
-| **`/Contents`** | Stream PKCS#7 (cert + hash). Giải mã để lấy cert "Khiem". |
-| **Incremental updates** | Append revision mới. Hỗ trợ ký lặp. |
-| **DSS (`/DSS` ref V)** | Trong Catalog, lưu OCSP/CRLs. Xác minh offline. |
-
-### Ví dụ minh họa
-
-Trong `signed.pdf`, SigField1 (widget) trỏ SigDict với `/ByteRange [0, 267828, 274120, 821]`, hash nội dung gốc. Tamper thêm text phá ByteRange, dẫn đến invalid.
-
-### Sơ đồ object (ASCII)  
-
-<img width="7860" height="2659" alt="Cấu trúc Object PDF có Chữ ký số" src="https://github.com/user-attachments/assets/5abccde0-c143-498f-a32e-fbfee54a13a6" />  
-
+## I. MỤC TIÊU
+Phân tích và hiện thực quy trình **tạo – nhúng – xác thực chữ ký số** trong file PDF.  
+Bài làm tuân thủ chuẩn **PDF 1.7 / PAdES (ETSI EN 319 142)** và sử dụng các công cụ:
+- `OpenSSL` – sinh cặp khóa và chứng thư số tự ký (self-signed)
+- `PyPDF2` / `pikepdf` – thao tác PDF và nhúng vùng chữ ký
+- `hashlib`, `base64` – băm dữ liệu và mã hóa chữ ký
+- `Python` – viết script tự động hoá ký và xác minh  
 
 ---
 
-## 2. Thời gian ký được lưu ở đâu?
+## II. CẤU TRÚC DỰ ÁN
 
-Thời gian ký lưu đa vị trí để chống chối bỏ, theo ISO 32000-1 và PAdES.
-
-### Vị trí lưu
-
-- **`/M` trong `/Sig`:** Thời gian từ máy ký (text `"D:20251027165803+00'00'"`). Dễ truy xuất nhưng không signed.
-
-- **Timestamp token (RFC 3161):** Trong `/Contents` (PKCS#7), attribute `timeStampToken` từ TSA. Signed cryptographically.
-
-- **Document timestamp (PAdES-DTS):** SigDict riêng, timestamp toàn file sau ký.
-
-- **DSS:** Trong Catalog, lưu timestamps + OCSP/CRLs cho validation dài hạn.
-
-### Khác biệt `/M` và RFC3161
-
-- **`/M`:** Nội bộ, từ hệ thống (dễ giả mạo, không pháp lý cao). Ví dụ `signed.pdf`: `/M = "D:20251027165803+00'00'"` (UTC, khớp Adobe 23:58 VN).
-
-- **RFC3161:** External từ TSA, signed hash document + thời điểm (chính xác, pháp lý, chống chối bỏ). PAdES yêu cầu cho advanced signature; verify kiểm tra token TSA.
-
-### Ví dụ
-
-`signed.pdf` dùng `/M` (không RFC3161), verify pyHanko báo thời gian `signer_reported_dt = 2025-10-27 23:58:03+07:00`.
-
----
-
-## 3. Rủi ro bảo mật chữ ký số trong PDF
-
-Chữ ký PDF an toàn nếu tuân thủ PAdES, nhưng dễ bị tấn công nếu tamper hoặc cert yếu.
-
-### Rủi ro chính
-
-- **Tamper nội dung (`/Contents` hoặc ByteRange):** Thay đổi text/hình phá hash, dẫn đến invalid (như `tampered.pdf` thêm "Xin chào", `mod_level = FORM_FILLING`). 
-  - **Rủi ro:** Giả mạo tài liệu, phát hiện qua verify (integrity check).
-
-- **Replay attack:** Ký lại SigDict với timestamp cũ, dùng incremental updates. 
-  - **Rủi ro:** Chối bỏ thời gian; giảm bằng RFC3161/DSS.
-
-- **Cert revocation (CRL/OCSP):** Cert "Khiem" hết hạn hoặc thu hồi không kiểm tra. 
-  - **Rủi ro:** Ký giả mạo; PAdES-DSS lưu CRL để validate offline.
-
-- **Side-channel attack:** Leak private key từ `signer_key.pem`. 
-  - **Rủi ro:** Forge chữ ký; bảo vệ bằng HSM (Hardware Security Module).
-
-- **Incremental updates lạm dụng:** Ký nhiều lớp, lớp sau che lớp trước. 
-  - **Rủi ro:** Ẩn thay đổi; kiểm tra qua pyHanko's `modification_level`.
-
-### Ví dụ minh họa
-
-`signed.pdf` hợp lệ (`bottom_line = VALID`). Tamper thêm text → invalid (`bottom_line = False`, "File bị chỉnh sửa"). Giảm rủi ro: Dùng PAdES-LTA (long-term validation) với DSS.
-
-### Biện pháp
-
-Validate bằng công cụ (pyHanko/Adobe), kiểm tra `/ByteRange`, dùng TSA cho timestamp.
+```
+CHUKYSO/  
+│
+├── assets/                     # Tài nguyên minh họa
+│   ├── chuky.jpg             
+│   ├── signature_img.png    
+│   └── ten.jpg                 # Hình ảnh chữ ký
+│
+├── docs/
+│   └── original.pdf            # File PDF gốc cần ký
+│
+├── keys/                       # Chứa khóa và chứng thư
+│   ├── signer_key.pem          # Khóa riêng RSA (private)
+│   └── signer_cert.pem         # Chứng thư số (certificate)
+│
+├── scripts/                    # Toàn bộ mã nguồn chính
+│   ├── gen_keys.py             # Sinh cặp khóa RSA và cert
+│   ├── overlay.pdf             # Lớp phủ chữ ký lên PDF
+│   ├── sign_pdf.py             # Script ký PDF
+│   ├── verify_pdf.py           # Script xác minh chữ ký
+│   ├── tamper_pdf.py           # Script giả mạo để test verify
+│   ├── quytrinh_tao_chuky.txt  # Ghi chú quy trình kỹ thuật
+│   ├── verify_log_ok.txt       # Log xác minh hợp lệ
+│   └── verify_log.txt          # Log xác minh thất bại
+│
+├── signed.pdf                   # File PDF đã ký
+├── tampered.pdf                 # File bị chỉnh sửa sau khi ký
+├── readme_chukyso.md            # Ghi chú riêng cho quy trình ký
+└── README.md                    # File mô tả chính
+```
 
 ---
 
-## Kết luận
+## III. QUY TRÌNH THỰC HIỆN
 
-Chữ ký số PDF đảm bảo toàn vẹn qua cấu trúc AcroForm/SigDict và ByteRange, thời gian ký qua `/M`/RFC3161, nhưng rủi ro tamper/cert cần DSS/PAdES để giảm. Thử nghiệm với `original.pdf` → `signed.pdf` → `tampered.pdf` chứng minh quy trình 8 bước hiệu quả.
+### 🔹 1. Sinh khóa RSA và chứng thư số
+
+**File:** `scripts/gen_keys.py`  
+**Thực hiện:**
+```bash
+cd scripts
+python gen_keys.py
+```
+
+**Kết quả:**
+- `keys/signer_key.pem`: Khóa riêng (RSA 2048-bit)
+- `keys/signer_cert.pem`: Chứng thư số tự ký (self-signed)
+
+**Mục đích:** Dùng để ký và xác thực chữ ký.  
+**Thuật toán:** RSA 2048-bit, SHA-256, padding PKCS#1 v1.5
 
 ---
 
-## Tài liệu tham khảo
+### 🔹 2. Tạo và ký file PDF
 
-- ISO 32000-1: PDF Standard
-- ETSI EN 319 142-1: PAdES
-- pyHanko docs: https://pyhanko.readthedocs.io
+**File:** `scripts/sign_pdf.py`  
+**Thực hiện:**
+```bash
+python sign_pdf.py
+```
+
+**Chức năng:**
+1. Tải file `docs/original.pdf`
+2. Tạo vùng Signature field (AcroForm)
+3. Reserve vùng `/Contents` 8192 bytes
+4. Tính hash SHA-256 trên vùng `/ByteRange`
+5. Sinh PKCS#7 detached signature (bao gồm: messageDigest, signingTime, contentType, certificate chain)
+6. Ghi blob PKCS#7 vào `/Contents`
+7. Ghi file mới `signed.pdf` bằng incremental update
+
+**Kết quả:**
+- File `signed.pdf` (PDF đã có chữ ký số hợp lệ)
+<img width="1757" height="741" alt="image" src="https://github.com/user-attachments/assets/34504e6a-7ded-406c-ac4c-e4cb9cf26207" />  
+
+---
+
+### 🔹 3. Xác minh chữ ký PDF
+
+**File:** `scripts/verify_pdf.py`  
+**Thực hiện:**
+```bash
+python verify_pdf.py
+```
+
+**Các bước xác minh:**
+1. Đọc Signature dictionary: `/Contents`, `/ByteRange`
+2. Tách chuỗi PKCS#7 từ PDF
+3. Kiểm tra messageDigest so với hash thực tế
+4. Xác minh chữ ký bằng public key trong `signer_cert.pem`
+5. Kiểm tra chứng thư (chain, validity date)
+6. Kiểm tra có bị sửa đổi (so sánh ByteRange)
+
+**Kết quả:**
+- `verify_log_ok.txt`: xác minh hợp lệ  
+<img width="1406" height="251" alt="image" src="https://github.com/user-attachments/assets/33aeab25-18f4-4b55-89d4-eafa62485953" />  
+
+- `verify_log.txt`: báo lỗi nếu file đã bị chỉnh sửa  
+<img width="1417" height="250" alt="image" src="https://github.com/user-attachments/assets/3649fcc7-d7a3-4564-bbc7-704f4bcf9213" />  
+
+---
+
+### 🔹 4. Thử giả mạo file PDF (tamper test)
+
+**File:** `scripts/tamper_pdf.py`  
+**Thực hiện:**
+```bash
+python tamper_pdf.py
+```
+
+**Chức năng:**
+1. Mở file `signed.pdf`
+2. Thêm 1 ký tự hoặc ghi đè nội dung nhỏ (ví dụ "TEST")
+3. Lưu thành `tampered.pdf`
+
+Khi chạy lại `verify_pdf.py`, kết quả sẽ báo:
+```
+❌ Signature invalid – file modified after signing
+```
+<img width="1864" height="826" alt="image" src="https://github.com/user-attachments/assets/cd95ce1c-f573-4f9d-9700-171f0e9fa15b" />  
+
+---
+
+## IV. GIẢI THÍCH CHUẨN & THÀNH PHẦN TRONG PDF
+
+| Thành phần | Mô tả | Vai trò |
+|------------|-------|---------|
+| `/Catalog` | Gốc của tài liệu PDF | Liên kết tới cây trang và form |
+| `/Pages` | Danh sách các trang | Trỏ tới từng Page object |
+| `/AcroForm` | Biểu mẫu chứa trường chữ ký | Quản lý SigField |
+| `/SigField` | Widget thể hiện vùng ký | Nơi người dùng ký |
+| `/Sig` | Signature dictionary | Chứa thông tin chữ ký số |
+| `/ByteRange` | Mảng byte được hash | Xác định vùng dữ liệu không ký |
+| `/Contents` | Dữ liệu PKCS#7 (chữ ký) | Chứa signature blob |
+| Incremental Update | Phần ghi thêm cuối file PDF | Lưu chữ ký mà không thay đổi file gốc |
+| DSS | Document Security Store | Lưu chứng thư, CRL, OCSP (nếu có) |
+
+---
+
+## V. THỜI GIAN KÝ
+
+| Loại thời gian | Vị trí lưu | Ý nghĩa |
+|----------------|------------|---------|
+| `/M` | Trong Signature dictionary | Thời điểm ký (text, không có giá trị pháp lý) |
+| signingTime | Trong PKCS#7 attribute | Thời điểm ký thực tế |
+| timeStampToken | RFC 3161 timestamp server | Có giá trị pháp lý nếu từ TSA |
+| Document timestamp | PAdES-level timestamp | Xác thực thời điểm toàn văn bản |
+
+---
+
+## VI. KẾT QUẢ DEMO
+
+| File | Nội dung |
+|------|----------|
+| `original.pdf` | File gốc chưa ký |
+| `signed.pdf` | File đã ký hợp lệ |
+| `tampered.pdf` | File bị thay đổi sau khi ký |
+| `verify_log_ok.txt` | Kết quả xác minh hợp lệ |
+| `verify_log.txt` | Báo lỗi xác minh thất bại |
+
+---
+
+## VII. GHI CHÚ BẢO MẬT
+
+- Sử dụng RSA ≥ 2048-bit và SHA-256.
+- Tránh công khai khóa thực (dùng khóa sinh ngẫu nhiên).
+- Không dùng private key thương mại.
+- Có thể mở rộng RSA-PSS hoặc thêm RFC3161 timestamp.
+
+---
+
+## VIII. THAM KHẢO
+
+- ISO 32000-2: PDF 2.0
+- ETSI EN 319 142: PAdES
+- RFC 3161: Time-Stamp Protocol
+- iText7, OpenSSL, PyPDF2
